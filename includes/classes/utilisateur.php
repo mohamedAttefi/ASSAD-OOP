@@ -1,24 +1,57 @@
 <?php
 class utilisateur
 {
-    public $id;
-    public $nom;
-    public $email;
-    public $motpasse_hash;
-    public $statut_compte;
-    public $role;
+    protected $id;
+    protected $nom;
+    protected $email;
+    protected $motpasse_hash;
+    protected $role;
 
-    public function __construct($nom, $email, $motpasse_hash, $statut_compte, $role)
+    public function __construct($nom, $email, $motpasse_hash, $role)
     {
         $this->id = null;
         $this->nom = $nom;
         $this->email = $email;
         $this->motpasse_hash = $motpasse_hash;
-        $this->statut_compte = $statut_compte;
         $this->role = $role;
     }
 
-    public function seDeconnecter() {}
+    public function getNom()
+    {
+        return $this->nom;
+    }
+    public function getEmail()
+    {
+        return $this->email;
+    }
+    public function getMotpasse()
+    {
+        return $this->motpasse_hash;
+    }
+    public function getRole()
+    {
+        return $this->role;
+    }
+    public function getId()
+    {
+        return $this->id;
+    }
+    public function setId($newId)
+    {
+        $this->id = $newId;
+    }
+
+
+    public function seDeconnecter()
+    {
+        $_SESSION = [];
+
+        session_destroy();
+
+
+        header("Location: ASSAD/ASSAD/index.php");
+        exit;
+    }
 
     public function SeConnecter($email, $motpasse_hash, $conn)
     {
@@ -30,32 +63,71 @@ class utilisateur
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($data) {
-            echo "login success";
-        } else {
-            echo "login failed";
-            return;
-        }
+            $utilisateur = new utilisateur($data['nom'], $data['email'], $data['motpasse_hash'], $data['role']);
+            $utilisateur->setId($data["id"]);
 
-        $_SESSION['user_id']  = $data['id'];
-        $_SESSION['user_nom'] = $data['nom'];
-        $_SESSION['role'] = $data['role'];
-        $_SESSION['statut'] = $data['statut'];
+            if ($utilisateur->getRole() == 'guide') {
+                $logedUser = new guide($data['nom'], $data['email'], $data['motpasse_hash'], $data['role'], $data['statut']);
+                $logedUser->setId($data['id']);
 
-        print_r($_SESSION);
-        if ($data['role'] == "guide") {
-            $user = new guide($data['nom'], $data['email'], $data['motpasse_hash']);
-            if ($data['role'] == "approuvee") {
-                header("location: pendingGuide.php");
-                exit;
+                return $logedUser;
             } else {
-                header("location: dashboardGuide.php");
-                exit;
+                $logedUser = new visiteur($data['nom'], $data['email'], $data['motpasse_hash'], $data['role'], $data['statut']);
+                $logedUser->setId($data['id']);
+                return $logedUser;
             }
         } else {
-            $user = new visiteur($data['nom'], $data['email'], $data['motpasse_hash']);
-            header("location: dashboardVisiteur.php");
-            exit;
+            return null;
         }
     }
-    public function afficherAnimaux() {}
+
+    public function getAll($conn)
+    {
+        $stmt_visiteurs = $conn->prepare("SELECT COUNT(*) as total FROM utilisateurs WHERE role='visiteur'");
+        $stmt_visiteurs->execute();
+        return $stmt_visiteurs->fetch()['total'];
+    }
+
+
+    public function getLatest($conn)
+    {
+        $latest_users_stmt = $conn->prepare("SELECT nom, email FROM utilisateurs ORDER BY nom DESC LIMIT 5");
+        $latest_users_stmt->execute();
+        return $latest_users_stmt->fetchall();
+    }
+
+    public function getCountReservation($conn)
+    {
+        $sql = "SELECT u.*, 
+               COUNT(DISTINCT r.id) as nb_reservations,
+               COUNT(DISTINCT c.id) as nb_commentaires,
+               MAX(r.datereservation) as derniere_reservation
+        FROM utilisateurs u
+        LEFT JOIN reservations r ON u.id = r.idutilisateur
+        LEFT JOIN commentaires c ON u.id = c.idutilisateur
+        GROUP BY u.id
+        ";
+
+        $result_stmt = $conn->prepare($sql);
+        $result_stmt->execute();
+
+        return $result_stmt->fetchall();
+    }
+
+    public function getCountByRole($conn)
+    {
+        $stats_sql = "SELECT 
+    COUNT(*) AS total,
+    COUNT(CASE WHEN role = 'visiteur' THEN 1 END) AS visiteurs,
+    COUNT(CASE WHEN role = 'guide' THEN 1 END) AS guides,
+    COUNT(CASE WHEN statut = 'approuvee' and role = 'guide' THEN 1 END) AS approuves,
+    COUNT(CASE WHEN role = 'admin' THEN 1 END) AS admins,
+    COUNT(CASE WHEN statut = 'actif' = 1 THEN 1 END) AS actifs,
+    COUNT(CASE WHEN statut = 'desactive' THEN 1 END) AS inactifs
+FROM utilisateurs;";
+
+        $stats_stmt = $conn->prepare($stats_sql);
+        $stats_stmt->execute();
+        return $stats_stmt->fetch();
+    }
 }
