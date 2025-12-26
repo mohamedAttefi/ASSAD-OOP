@@ -1,19 +1,18 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/animaux.php';
+include '../includes/classes/habitat.php';
 
-$result_stmt = $conn->prepare("
-    SELECT a.*, h.nom as habitat_nom 
-    FROM animaux a 
-    LEFT JOIN habitats h ON a.id_habitat = h.id 
-    ORDER BY a.nom ASC
-");
-$result_stmt->execute();
-$result = $result_stmt->fetchall();
+$animal = new animaux("","","","","","","");
+$habitat = new habitat("","","","");
 
-$habitats_stmt = $conn->prepare("SELECT id, nom FROM habitats ORDER BY nom");
-$habitats_stmt->execute();
-$habitats = $habitats_stmt->fetchall();
+$result = $animal->getAll($conn);
+print_r($result);
+
+$habitats = $habitat->getall($conn);
+
+
 
 
 ?>
@@ -117,7 +116,7 @@ $habitats = $habitats_stmt->fetchall();
                         id="animal-habitat"
                         class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
                         <option value="">Sélectionner un habitat...</option>
-                        <?php foreach ($habitats as $habitats) { ?>
+                        <?php foreach ($habitats as $habitat) { ?>
                             <option value="<?php echo $habitat['id']; ?>">
                                 <?php echo ($habitat['nom']); ?>
                             </option>
