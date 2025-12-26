@@ -4,8 +4,10 @@ include 'includes/db.php';
 
 
 $sql = 'select * from animaux limit 4';
-$result = mysqli_query($conn, $sql); 
-$data = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$result = $conn->prepare($sql);
+$result->execute(); 
+$data = $result->fetchall();
+
 
 print_r($data);
 
