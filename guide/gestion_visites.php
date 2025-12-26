@@ -1,10 +1,11 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/visite.php';
 
-$result_stmt = $conn->prepare("SELECT * FROM visitesguidees inner join utilisateurs on visitesguidees.id_guide =  utilisateurs.id where utilisateurs.id = {$_SESSION['user_id']} ORDER BY dateheure DESC");
-$result_stmt->execute();
-$result = $result_stmt->fetchall();
+$visite = new visite("","","","","","","","","");
+
+$result = $visite->getAll($conn, $_SESSION['user_id']);
 ?>
 
 <!-- Hero Section -->
