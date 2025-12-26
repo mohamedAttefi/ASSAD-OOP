@@ -1,6 +1,9 @@
 <?php
 include "includes/header.php";
 include "includes/db.php";
+include "includes/classes/visite.php";
+
+$visite = new visite("","","","","","","","","");
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'guide') {
     if (!isset($_SESSION['user_id'])) {
@@ -11,13 +14,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'guide') {
 }
 
 
+
 $user_id  = $_SESSION['user_id'];
 $user_nom = $_SESSION['user_nom'];
-$sql = "select * from visitesguidees v join utilisateurs u  on v.id_guide = u.id join reservations r on v.id = r.idvisite where v.id_guide = $user_id order by v.dateheure limit 1";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    print_r($data);
+
+    $data = $visite->getVistesParGuide($user_id, $conn);
 ?>
 
 <!-- Hero Section -->
