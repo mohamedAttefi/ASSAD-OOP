@@ -1,18 +1,59 @@
 <?php
 include "includes/db.php";
-include "includes/classes/utilisateur.php";
+require_once "includes/classes/utilisateur.php";
+require_once "includes/classes/visiteur.php";
+require_once "includes/classes/guide.php";
+session_start();
+
+$utilisateur = new utilisateur("", "", "", "");
+
 if (isset($_POST['login'])) {
     echo "wesh";
 
     $email = $_POST['email'];
     $password = md5($_POST['password']);
 
-    $user = new utilisateur("", "", "", "", "");
-    $user->SeConnecter($email, $password, $conn);
-    // print_r($_SESSION);
-    
+    $user = $utilisateur->SeConnecter($email, $password, $conn);
+
+    // print_r($user);
+
+
+
+    if (!$user) {
+        echo "something went wrong";
+        return;
+    }
+
+    $_SESSION['user_id']  = $user->getId();
+    $_SESSION['user_nom'] = $user->getNom();
+    $_SESSION['role'] = $user->getRole();
+    $_SESSION['statut'] = $user->getStatut();
+    $_SESSION['motpasse'] = $user->getMotpasse();
+    $_SESSION['email'] = $user->getEmail();
+
+    print_r($_SESSION);
+
+
+
+
+    if ($user->getRole() == "guide") {
+        if ($user->getStatut() == "approuvee") {
+            header("location: pendingGuide.php");
+            exit;
+        } else {
+            header("location: dashboardGuide.php");
+            exit;
+        }
+    } elseif ($user->getRole() == "visiteur") {
+        header("location: dashboardVisiteur.php");
+        exit;
+    }
+
+    include "includes/header.php";
 }
-include "includes/header.php";
+
+
+
 
 ?>
 <!-- Hero Section -->
