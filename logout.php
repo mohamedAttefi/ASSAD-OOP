@@ -1,10 +1,6 @@
 <?php
+require_once "includes/classes/utilisateur.php";
 session_start();
 
-$_SESSION = [];
-
-session_destroy();
-
-
-header("Location: ASSAD/ASSAD/index.php");
-exit;
+$user = new utilisateur("","","","");
+$user->SeDeconnecter();
