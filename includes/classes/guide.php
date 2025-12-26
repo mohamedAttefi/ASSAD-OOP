@@ -1,11 +1,14 @@
 <?php
-include 'utilisateur.php';
+require_once 'utilisateur.php';
 
 class guide extends utilisateur
 {
-    public function __construct($nom, $email, $motpasse_hash)
+    private $statut_approbation;
+    public function __construct($nom, $email, $motpasse_hash, $role, $statut_approbation)
     {
-        utilisateur::__construct($nom, $email, $motpasse_hash, "desapprouvee", 'guide');
+        utilisateur::__construct($nom, $email, $motpasse_hash, $role);
+        $this->role = "guide";
+        $this->statut_approbation = $statut_approbation;
     }
     public function ajouterVisite($conn, $titre, $dateheure, $langue, $capacite_max, $statut, $duree, $prix, $id)
     {
@@ -82,5 +85,48 @@ class guide extends utilisateur
     public function annuleeVisite($id_visite, $conn)
     {
         $sql = $conn->prepare("delete from visitesguidees where id = '$id_visite'")->execute();
+    }
+
+    public static function approuveeGuide($conn, $id)
+    {
+        return $conn->prepare("update utilisateurs set statut = 'approuvee' where id = $id and statut = 'desapprouvee'")->execute();
+    }
+    public function desapprouveeGuide($conn, $id)
+    {
+        return $conn->prepare("update utilisateurs set statut = 'desapprouvee' where id = $id and statut = 'approuvee'")->execute();
+    }
+
+
+    public function getNom()
+    {
+        return $this->nom;
+    }
+    public function getEmail()
+    {
+        return $this->email;
+    }
+    public function getMotpasse()
+    {
+        return $this->motpasse_hash;
+    }
+    public function getRole()
+    {
+        return $this->role;
+    }
+    public function getStatut()
+    {
+        return $this->statut_approbation;
+    }
+    public function setStatut($newStatut)
+    {
+        $this->statut_approbation = $newStatut;
+    }
+    public function getId()
+    {
+        return $this->id;
+    }
+    public function setId($newId)
+    {
+        $this->id = $newId;
     }
 }
