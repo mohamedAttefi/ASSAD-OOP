@@ -2,7 +2,7 @@
 session_start();
 include '../../includes/db.php';
 include '../../includes/classes/guide.php';
-$guide = new guide("", "", "");
+$guide = new guide("", "", "", '','');
 
 if (isset($_POST['supprimer'])) {
 
