@@ -1,16 +1,11 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/habitat.php';
 
-$result_stmt = $conn->prepare("
-    SELECT h.*, COUNT(a.id) as nb_animaux 
-    FROM habitats h 
-    LEFT JOIN animaux a ON h.id = a.id_habitat 
-    GROUP BY h.id 
-    ORDER BY h.nom ASC
-");
-$result_stmt->execute();
-$result = $result_stmt->fetchall();
+$habitat = new habitat("","","","");
+
+$result = $habitat->getAll($conn);
 ?>
 
 <!-- Hero Section -->
