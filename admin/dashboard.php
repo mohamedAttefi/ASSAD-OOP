@@ -1,20 +1,23 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/utilisateur.php';
+include '../includes/classes/animaux.php';
+include '../includes/classes/reservation.php';
+include '../includes/classes/visite.php';
+$user = new utilisateur("","","","");
+$animal = new animaux("","","","", "","","");
+$visite = new visite("","","","","","","","","");
+$user = new utilisateur("","","","");
 
-$stmt_visiteurs = $conn->prepare("SELECT COUNT(*) as total FROM utilisateurs WHERE role='visiteur'");
-$stmt_visiteurs->execute();
-$total_visiteurs = $stmt_visiteurs->fetch()['total'];
+
+$total_visiteurs = $user->getAll($conn);
 
 
-$stmt_animaux = $conn->prepare("SELECT COUNT(*) as total FROM animaux");
-$stmt_animaux->execute();
-$total_animaux = $stmt_animaux->fetch()['total'];
+$total_animaux = $animal->getAll($conn);
 
 
-$stmt_visites = $conn->prepare("SELECT COUNT(*) as total FROM visitesguidees");
-$stmt_visites->execute();
-$total_visites = $stmt_visites->fetch()['total'];
+$total_visites = $visite->getAll($conn);
 
 
 
@@ -30,22 +33,12 @@ $stmt_revenue = $conn->prepare("
 $stmt_revenue->execute();
 $total_revenue = $stmt_revenue->fetch()['total'];
 
-$latest_users_stmt = $conn->prepare("SELECT nom, email FROM utilisateurs ORDER BY nom DESC LIMIT 5");
-$latest_users_stmt->execute();
-$latest_users = $latest_users_stmt->fetchall();
+
+$latest_users = $user->getLatest($conn);
 
 
-$upcoming_visits_stmt = $conn->prepare("
-    SELECT titre, dateheure, COUNT(r.id) as reservations 
-    FROM visitesguidees v 
-    LEFT JOIN reservations r ON v.id = r.idvisite 
-    WHERE v.dateheure >= CURDATE() 
-    GROUP BY v.id 
-    ORDER BY v.dateheure ASC 
-    LIMIT 5
-");
-$upcoming_visits_stmt->execute();
-$upcoming_visits = $upcoming_visits_stmt->fetchall();
+
+$upcoming_visits = $visite->getUpcomingVisites($conn);
 ?>
 
 <!-- Hero Section -->
