@@ -2,6 +2,7 @@
 include "utilisateur.php";
 class visiteur_non_connecter extends utilisateur
 {
+    private $statut_compte;
 
     public function __construct($nom, $email, $motpasse_hash, $role)
     {
@@ -10,7 +11,8 @@ class visiteur_non_connecter extends utilisateur
         } else {
             $statut_compte = "actif";
         }
-        parent::__construct($nom, $email, $motpasse_hash, $statut_compte, $role);
+        $this->statut_compte = $statut_compte;
+        parent::__construct($nom, $email, $motpasse_hash, $role);
     }
     public function Sinscrire($conn)
     {
