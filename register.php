@@ -13,6 +13,9 @@ if (isset($_POST['add'])) {
         die("Passwords do not match");
     }
 
+    $_SESSION['date_inscription'] = (new DateTime())->format('Y-m-d H:i:s');
+
+
     $newuser = new visiteur_non_connecter($nom, $email, $password, $role);
     $newuser->Sinscrire($conn);
 }
