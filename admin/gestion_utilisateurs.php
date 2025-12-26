@@ -1,33 +1,15 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/utilisateur.php';
 
-$sql = "SELECT u.*, 
-               COUNT(DISTINCT r.id) as nb_reservations,
-               COUNT(DISTINCT c.id) as nb_commentaires,
-               MAX(r.datereservation) as derniere_reservation
-        FROM utilisateurs u
-        LEFT JOIN reservations r ON u.id = r.idutilisateur
-        LEFT JOIN commentaires c ON u.id = c.idutilisateur
-        GROUP BY u.id
-        ";
-
-$result_stmt = $conn->prepare($sql);
-$result_stmt->execute();
-$result = $result_stmt->fetchall();
+$user = new utilisateur("","","","");
 
 
-$stats_sql = "SELECT 
-    COUNT(*) AS total,
-    COUNT(CASE WHEN role = 'visiteur' THEN 1 END) AS visiteurs,
-    COUNT(CASE WHEN role = 'guide' THEN 1 END) AS guides,
-    COUNT(CASE WHEN statut = 'approuvee' and role = 'guide' THEN 1 END) AS approuves,
-    COUNT(CASE WHEN role = 'admin' THEN 1 END) AS admins
-FROM utilisateurs;";
+$result = $user->getCountReservation($conn);
 
-$stats_stmt = $conn->prepare($stats_sql);
-$stats_stmt->execute();
-$stats = $stats_stmt->fetch();
+
+$stats = $user->getCountByRole($conn);
 
 
 ?>
@@ -54,7 +36,7 @@ $stats = $stats_stmt->fetch();
 
 <div class="max-w-7xl mx-auto px-4 mb-10">
     <!-- Statistiques -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg p-6">
             <div class="flex justify-between items-start">
                 <div>
@@ -106,6 +88,19 @@ $stats = $stats_stmt->fetch();
                 </div>
             </div>
         </div>
+
+        <div class="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-amber-100 text-sm">Actifs</p>
+                    <p class="text-3xl font-bold"><?php echo $stats['actifs']; ?></p>
+                    <p class="text-amber-200 text-sm mt-2">/ <?php echo $stats['inactifs']; ?> inactifs</p>
+                </div>
+                <div class="bg-white/20 p-3 rounded-full">
+                    <i class="fas fa-user-check text-2xl"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Filtres et recherche -->
@@ -138,8 +133,15 @@ $stats = $stats_stmt->fetch();
                 <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
                     id="filterStatus">
                     <option value="">Tous les statuts</option>
-                    <option value="1">Approuvé</option>
-                    <option value="0">Non approuvé</option>
+                    <option value="approuvee">Approuvé</option>
+                    <option value="en_attente">En attente</option>
+                </select>
+
+                <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500"
+                    id="filterActif">
+                    <option value="">Tous les états</option>
+                    <option value="1">Actif</option>
+                    <option value="0">Inactif</option>
                 </select>
             </div>
         </div>
@@ -179,7 +181,10 @@ $stats = $stats_stmt->fetch();
                                 Rôle
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Statut
+                                Statut Guide
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                État Compte
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -202,7 +207,8 @@ $stats = $stats_stmt->fetch();
                             <tr class="hover:bg-gray-50 transition-colors user-row"
                                 data-name="<?php echo strtolower($row['nom']); ?>"
                                 data-email="<?php echo strtolower($row['email']); ?>"
-                                data-role="<?php echo $row['role']; ?>">
+                                data-role="<?php echo $row['role']; ?>"
+                                data-approved="<?php echo $row['statut'] ?? ''; ?>"
                                 <!-- Utilisateur -->
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
@@ -218,7 +224,6 @@ $stats = $stats_stmt->fetch();
                                             <div class="font-medium text-gray-900">
                                                 <?php echo htmlspecialchars($row['nom']); ?>
                                             </div>
-
                                         </div>
                                     </div>
                                 </td>
@@ -253,7 +258,7 @@ $stats = $stats_stmt->fetch();
                                     </span>
                                 </td>
 
-                                <!-- Statut -->
+                                <!-- Statut Guide -->
                                 <td class="px-6 py-4">
                                     <?php if ($row['role'] == 'guide'): ?>
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
@@ -263,23 +268,44 @@ $stats = $stats_stmt->fetch();
                                         </span>
                                     <?php else: ?>
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                            <i class="fas fa-check mr-2"></i>
-                                            Actif
+                                            <i class="fas fa-minus mr-2"></i>
+                                            Non applicable
                                         </span>
                                     <?php endif; ?>
+                                </td>
+                                
+
+                                <!-- État du Compte -->
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                        <?php echo $row['statut'] == 'actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'; ?>">
+                                        <i class="fas <?php echo $row['statut'] == 'actif' ? 'fa-check-circle' : 'fa-times-circle'; ?> mr-2"></i>
+                                        <?php echo $row['statut'] == 'actif' ? 'Actif' : 'Inactif'; ?>
+                                    </span>
                                 </td>
 
                                 <!-- Actions -->
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-2">
                                         <?php if ($row['role'] == 'guide'): ?>
-                                            <form method='post' action="users_CRUD/action.php">
+                                            <form method='post' action="users_CRUD/actionGuide.php">
                                                 <button name="<?php echo $row['statut'] == 'approuvee' ? 'desapprouvee' : 'approuvee'; ?>" value='<?= $row['id']; ?>'
                                                     class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition"
                                                     title="<?php echo $row['statut'] == 'approuvee' ? 'Désapprouver' : 'Approuver'; ?>">
                                                     <i class="fas <?php echo $row['statut'] == 'approuvee' ? 'fa-times-circle' : 'fa-check-circle'; ?>"></i>
                                                 </button>
                                             </form>
+                                        <?php else: ?>
+
+                                        <form method='post' action="users_CRUD/actionVisiteur.php">
+                                            <button name="<?php echo $row['statut'] == "actif" ? 'desactiverCompte' : 'activerCompte'; ?>" 
+                                                    value='<?= $row['id']; ?>'
+                                                    class="text-orange-600 hover:text-orange-800 p-2 hover:bg-orange-50 rounded-lg transition"
+                                                    title="<?php echo $row['statut'] == "actif" ? 'Désactiver le compte' : 'Activer le compte'; ?>"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir <?php echo $row['statut'] == 'actif' ? 'désactiver' : 'activer'; ?> ce compte ?')">
+                                                <i class="fas <?php echo $row['statut'] == "actif" ? 'fa-user-slash' : 'fa-user-check'; ?>"></i>
+                                            </button>
+                                        </form>
                                         <?php endif; ?>
 
                                         <a href="editer_utilisateur.php?id=<?php echo $row['id']; ?>"
@@ -288,20 +314,12 @@ $stats = $stats_stmt->fetch();
                                             <i class="fas fa-edit"></i>
                                         </a>
 
-                                        <form method='post' action="users_CRUD/action.php">
-                                            <button name="supprimerUser" value="<?php echo $row['id']; ?>"
-                                                class="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition"
-                                                title="Supprimer"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-
                                         <button class="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition"
                                             title="Voir détails"
                                             onclick="showUserDetails(<?php echo $row['id']; ?>)">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        
                                     </div>
                                 </td>
                             </tr>
@@ -334,15 +352,23 @@ $stats = $stats_stmt->fetch();
         <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
             <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <i class="fas fa-info-circle text-green-600 mr-3"></i>
-                Guide d'approbation
+                Guide de gestion
             </h3>
             <div class="space-y-4">
                 <div class="bg-white p-4 rounded-lg">
                     <div class="flex items-center mb-2">
                         <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                        <p class="font-medium text-gray-800">Guides approuvés</p>
+                        <p class="font-medium text-gray-800">Comptes actifs</p>
                     </div>
-                    <p class="text-sm text-gray-600">Peut créer et animer des visites guidées.</p>
+                    <p class="text-sm text-gray-600">Peut se connecter et utiliser toutes les fonctionnalités.</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <div class="w-3 h-3 bg-gray-500 rounded-full mr-3"></div>
+                        <p class="font-medium text-gray-800">Comptes inactifs</p>
+                    </div>
+                    <p class="text-sm text-gray-600">Ne peut pas se connecter. Utile pour suspension temporaire.</p>
                 </div>
 
                 <div class="bg-white p-4 rounded-lg">
@@ -351,14 +377,6 @@ $stats = $stats_stmt->fetch();
                         <p class="font-medium text-gray-800">Guides en attente</p>
                     </div>
                     <p class="text-sm text-gray-600">Doit être approuvé par un administrateur.</p>
-                </div>
-
-                <div class="bg-white p-4 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                        <p class="font-medium text-gray-800">Attention</p>
-                    </div>
-                    <p class="text-sm text-gray-600">La suppression d'un utilisateur est irréversible.</p>
                 </div>
             </div>
         </div>
@@ -377,9 +395,10 @@ $stats = $stats_stmt->fetch();
                     <i class="fas fa-envelope mr-3"></i>
                     Envoyer un email groupé
                 </button>
-                <button class="w-full border-2 border-gray-300 text-gray-600 hover:bg-gray-50 py-3 rounded-lg font-medium transition flex items-center justify-center">
-                    <i class="fas fa-print mr-3"></i>
-                    Imprimer la liste
+                <button class="w-full border-2 border-orange-600 text-orange-600 hover:bg-orange-50 py-3 rounded-lg font-medium transition flex items-center justify-center"
+                        onclick="activerTousComptes()">
+                    <i class="fas fa-user-check mr-3"></i>
+                    Activer tous les comptes
                 </button>
             </div>
         </div>
@@ -391,18 +410,21 @@ $stats = $stats_stmt->fetch();
     const searchInput = document.getElementById('searchInput');
     const filterRole = document.getElementById('filterRole');
     const filterStatus = document.getElementById('filterStatus');
+    const filterActif = document.getElementById('filterActif');
     const userRows = document.querySelectorAll('.user-row');
 
     function filterUsers() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedRole = filterRole.value;
         const selectedStatus = filterStatus.value;
+        const selectedActif = filterActif.value;
 
         userRows.forEach(row => {
             const name = row.getAttribute('data-name');
             const email = row.getAttribute('data-email');
             const role = row.getAttribute('data-role');
             const approved = row.getAttribute('data-approved');
+            const actif = row.getAttribute('data-actif');
 
             let show = true;
 
@@ -421,6 +443,11 @@ $stats = $stats_stmt->fetch();
                 show = false;
             }
 
+            // Filtre par état actif/inactif
+            if (selectedActif && actif !== selectedActif) {
+                show = false;
+            }
+
             row.style.display = show ? '' : 'none';
         });
     }
@@ -429,8 +456,20 @@ $stats = $stats_stmt->fetch();
     searchInput.addEventListener('input', filterUsers);
     filterRole.addEventListener('change', filterUsers);
     filterStatus.addEventListener('change', filterUsers);
+    filterActif.addEventListener('change', filterUsers);
 
+    function activerTousComptes() {
+        if (confirm('Êtes-vous sûr de vouloir activer tous les comptes inactifs ?')) {
+            // Vous pouvez implémenter une requête AJAX ici
+            // ou rediriger vers une action spécifique
+            window.location.href = 'users_CRUD/action.php?action=activer_tous';
+        }
+    }
 
+    function showUserDetails(userId) {
+        // Implémentez la fonction de détails si nécessaire
+        alert('Détails de l\'utilisateur ID: ' + userId);
+    }
 
     // Animation pour les lignes du tableau
     document.addEventListener('DOMContentLoaded', function() {
