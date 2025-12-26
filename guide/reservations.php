@@ -1,17 +1,11 @@
 <?php
 include '../includes/header.php';
 include '../includes/db.php';
+include '../includes/classes/reservation.php';
 
-$sql = "SELECT r.id, r.nbpersonnes, r.datereservation, 
-               u.nom, u.email,
-               v.titre as visite_titre, v.prix, v.dateheure
-        FROM reservations r
-        JOIN utilisateurs u ON r.idutilisateur = u.id
-        JOIN visitesguidees v ON r.idvisite = v.id
-        ORDER BY r.datereservation DESC";
-$result_stmt = $conn->prepare($sql);
-$result_stmt->execute();
-$result = $result_stmt->fetchall();
+$resrvation = new reservation("","","","","");
+
+$result = $reservation->getAll($conn);
 ?>
 
 <!-- Hero Section -->
@@ -173,7 +167,6 @@ $result = $result_stmt->fetchall();
                             $visit_date = date('d/m/Y', strtotime($row['dateheure']));
                             $total_price = $row['prix'] * $row['nbpersonnes'];
 
-                            // Déterminer la couleur du statut
                             $status_class = 'bg-gray-100 text-gray-800';
                             $status_icon = 'fa-clock';
                            
