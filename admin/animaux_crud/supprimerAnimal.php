@@ -1,12 +1,11 @@
 <?php
 include '../includes/db.php';
-include '../includes/classes/admin.php';
-$admin = new admin("", "", "");
+include '../includes/classes/animaux.php';
 
 
 if (isset($_POST['supprimerAnimal'])) {
     $id = $_POST['supprimerAnimal'];
-    $admin->supprimerAnimal($conn, $id);
+    animaux::supprimerAnimal($conn, $id);
     header('location: ../gestion_animaux.php');
     exit;
 }

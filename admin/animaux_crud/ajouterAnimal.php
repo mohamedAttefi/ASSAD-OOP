@@ -1,8 +1,8 @@
 <?php
 include '../includes/db.php';
-include '../includes/classes/admin.php';
+include '../includes/classes/animaux.php';
 
-$admin = new admin("", "", "");
+
 
 if (isset($_POST['ajouterAnimal'])) {
     $nom = $_POST['nom'];
@@ -13,16 +13,9 @@ if (isset($_POST['ajouterAnimal'])) {
     $descriptioncourte = $_POST['descriptioncourte'];
     $id_habitat = $_POST['id_habitat'];
 
-    $admin->creerAnimal(
-        $conn,
-        $nom,
-        $espece,
-        $alimentation,
-        $image,
-        $paysorigine,
-        $descriptioncourte,
-        $id_habitat
-    );
+    $animal = new animaux($nom, $espece, $alimentation, $paysorigine, $image, $id_habitat, $descriptioncourte);
+
+    $animal->creerAnimal($conn);
 
     header('location: ../gestion_animaux.php');
     exit;
@@ -40,8 +33,10 @@ if (isset($_POST['modifierAnimal'])) {
     $descriptioncourte = $_POST['descriptioncourte'];
     $paysorigine = $_POST['paysorigine'];
 
-    $admin->modifierAnimal($conn, $id, $nom, $espece, $alimentation, $image, $id_habitat, $descriptioncourte, $paysorigine);
-    
+    $animal = new animaux($nom, $espece, $alimentation, $paysorigine, $image, $id_habitat, $descriptioncourte);
+
+    $animal->modifierAnimal($conn, $id);
+
     header('location: ../gestion_animaux.php');
     exit;
 }
