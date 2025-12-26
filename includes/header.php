@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -49,17 +48,17 @@ session_start();
                             </button>
 
                             <div class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg py-2 hidden group-hover:block">
-                                <a href="/ASSAD/visiteur/visite.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/visiteur/visite.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Les visites
                                 </a>
-                                <a href="/ASSAD/visiteur/mes_reservations.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/visiteur/mes_reservations.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Mes Réservations
                                 </a>
-                                <a href="/ASSAD/visiteur/commenter.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/visiteur/commenter.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Commentaires
                                 </a>
                                 <hr class="my-2">
-                                <a href="/ASSAD/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
                                     <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
                                 </a>
                             </div>
@@ -76,20 +75,20 @@ session_start();
                             </button>
 
                             <div class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg py-2 hidden group-hover:block">
-                                <a href="/ASSAD/admin/dashboard.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/admin/dashboard.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-user-circle mr-2 text-green-600"></i>dashboard
                                 </a>
-                                <a href="/ASSAD/admin/gestion_animaux.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/admin/gestion_animaux.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Gestion des animaux
                                 </a>
-                                <a href="/ASSAD/admin/gestion_habitats.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/admin/gestion_habitats.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Gestion des habitats
                                 </a>
-                                <a href="/ASSAD/admin/gestion_utilisateurs.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/admin/gestion_utilisateurs.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Gestion des utilisateurs
                                 </a>
                                 <hr class="my-2">
-                                <a href="/ASSAD/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
                                     <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
                                 </a>
                             </div>
@@ -105,14 +104,14 @@ session_start();
                             </button>
 
                             <div class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg py-2 hidden group-hover:block">
-                                <a href="/ASSAD/guide/gestion_visites" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/guide/gestion_visites" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-user-circle mr-2 text-green-600"></i>Gestion des visites
                                 </a>
-                                <a href="/ASSAD/guide/reservations.php" class="block px-4 py-2 hover:bg-green-50">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/guide/reservations.php" class="block px-4 py-2 hover:bg-green-50">
                                     <i class="fas fa-calendar-check mr-2 text-green-600"></i>Réservations
                                 </a>
                                 <hr class="my-2">
-                                <a href="/ASSAD/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
+                                <a href="/ASSAD-OOP/ASSAD-OOP/logout.php" class="block px-4 py-2 hover:bg-red-50 text-red-600">
                                     <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
                                 </a>
                             </div>
@@ -121,10 +120,10 @@ session_start();
 
                     <?php if (!isset($_SESSION['user_id'])): ?>
                         <div class="flex items-center space-x-4">
-                            <a href="/ASSAD/login.php" class="hover:text-green-200 transition font-medium">
+                            <a href="/ASSAD-OOP/ASSAD-OOP/login.php" class="hover:text-green-200 transition font-medium">
                                 <i class="fas fa-sign-in-alt mr-2"></i>Connexion
                             </a>
-                            <a href="/ASSAD/register.php" class="bg-white text-green-700 px-4 py-2 rounded-lg font-medium hover:bg-green-50 transition">
+                            <a href="/ASSAD-OOP/ASSAD-OOP/register.php" class="bg-white text-green-700 px-4 py-2 rounded-lg font-medium hover:bg-green-50 transition">
                                 <i class="fas fa-user-plus mr-2"></i>Inscription
                             </a>
                         </div>
