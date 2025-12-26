@@ -2,7 +2,6 @@
 include '../../includes/db.php';
 include '../includes/classes/admin.php';
 
-$admin = new admin("", "", "");
 if (isset($_POST['ajouterHabitat'])) {
 
     $nom = $_POST['nom'];
@@ -10,9 +9,9 @@ if (isset($_POST['ajouterHabitat'])) {
     $zonezoo = $_POST['zonezoo'];
     $description = $_POST['description'];
 
-    $admin->creerHabitat($conn, $nom, $typeclimat, $zonezoo, $description);
+    $habitat = new habitat($nom, $typeclimat, $description, $zonezoo);
 
-
+    $habitat->creerHabitat($conn);
 
     header('location: ../gestion_habitats.php');
     exit;
@@ -21,14 +20,15 @@ if (isset($_POST['ajouterHabitat'])) {
 
 if (isset($_POST['modifierHabitat'])) {
 
-    $id = (int) $_POST['modifierHabitat'];
+    $id = $_POST['modifierHabitat'];
     $nom = $_POST['nom'];
     $typeclimat = $_POST['typeclimat'];
     $zonezoo = $_POST['zonezoo'];
     $description = $_POST['description'];
 
-    $admin->modifierHabitat($conn, $id, $nom, $typeclimat, $zonezoo, $description);
+    $habitat = new habitat($nom, $typeclimat, $description, $zonezoo);
 
+    $habitat->modifierHabitat($conn, $id);
 
     header('location: ../gestion_habitats.php');
     exit;
